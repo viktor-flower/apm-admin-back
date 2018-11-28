@@ -1,0 +1,29 @@
+{
+  "name": "apm-admin-back",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "tslint": "tslint -c ./tslint.json 'src/**/*.ts'",
+    "compile": "tsc",
+    "compile-watch": "tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/viktor-flower/apm-admin-back.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/viktor-flower/apm-admin-back/issues"
+  },
+  "homepage": "https://github.com/viktor-flower/apm-admin-back#readme",
+  "devDependencies": {
+    "tslint": "^5.11.0",
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^3.1.6"
+  },
+  "dependencies": {
+    "inversify": "^5.0.1"
+  }
+}
