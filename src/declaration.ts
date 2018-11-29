@@ -1,5 +1,5 @@
 export type IDynamicConfig = {
-  adminPassword: string
+  stub: string
 }
 
 export type IConfig = {
@@ -14,10 +14,11 @@ export type IConfig = {
   },
   dynamicConfig: IDynamicConfig,
   client: {
-    defaultLanguage: string;
+    stub: string;
   }
 }
 
 export const CType = {
-  Config: Symbol.for('Config')
+  Config: Symbol.for('Config'),
+  Core: Symbol.for('Core')
 }
