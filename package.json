@@ -21,7 +21,9 @@
   },
   "homepage": "https://github.com/viktor-flower/apm-admin-back#readme",
   "devDependencies": {
+    "@types/jsonschema": "^1.1.1",
     "@types/mocha": "^5.2.5",
+    "@types/mongodb": "^3.1.15",
     "@types/node": "^10.12.10",
     "mocha": "^5.2.0",
     "tslint": "^5.11.0",
@@ -32,7 +34,9 @@
     "@types/lodash": "^4.14.118",
     "@types/should": "^13.0.0",
     "inversify": "^5.0.1",
+    "jsonschema": "^1.2.4",
     "lodash": "^4.17.11",
+    "mongodb": "^3.1.10",
     "reflect-metadata": "^0.1.12",
     "should": "^13.2.3"
   }

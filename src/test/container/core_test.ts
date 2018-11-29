@@ -1,7 +1,7 @@
 import { bootstrapCore, resolveConfig } from '../../bootstrap'
 import { CType } from '../../declaration'
 import { CoreContainer } from '../../container/core'
-import should = require('should')
+import should from 'should'
 
 describe('Container Core', () => {
   const config = resolveConfig()
