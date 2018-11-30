@@ -1,5 +1,5 @@
 import { inject, injectable } from 'inversify'
-import { CType, IConfig, IInstallable } from '../declaration'
+import { CType, IConfig, IInstallable, IPostDeleteBuilder } from '../declaration'
 import { DbContainer } from '../container/db'
 import { ObjectID } from 'bson'
 import { DeleteWriteOpResultObject, UpdateWriteOpResult } from 'mongodb'
@@ -27,6 +27,7 @@ export const PermissionDataSchema = {
 @injectable()
 export class PermissionEntity implements IInstallable {
   private collectionName = 'permission'
+  private postDeletePB: IPostDeleteBuilder[] = []
 
   @inject(CType.Config)
   protected config!: IConfig
@@ -42,6 +43,10 @@ export class PermissionEntity implements IInstallable {
     return result.insertedId
   }
 
+  public registerPostDeleteBuilder (builder: IPostDeleteBuilder) {
+    this.postDeletePB.push(builder)
+  }
+
   public async get (_id: ObjectID): Promise<IPermissionData> {
     const db = await this.dbContainer.getDb()
 
@@ -50,8 +55,10 @@ export class PermissionEntity implements IInstallable {
 
   public async delete (_id: ObjectID): Promise<DeleteWriteOpResultObject> {
     const db = await this.dbContainer.getDb()
+    const result = await db.collection(this.collectionName).deleteOne({ _id })
 
-    return db.collection(this.collectionName).deleteOne({ _id })
+    return Promise.all(this.postDeletePB.map((builder) => builder(_id)))
+      .then(() => result)
   }
 
   public async save (post: IPermissionData): Promise<UpdateWriteOpResult> {

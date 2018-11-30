@@ -1,3 +1,5 @@
+import { ObjectID } from 'bson'
+
 export type IDynamicConfig = {
   stub: string
 }
@@ -29,6 +31,10 @@ export const CType = {
     Role: Symbol.for('Role'),
     User: Symbol.for('User')
   }
+}
+
+export interface IPostDeleteBuilder {
+  (result: ObjectID): void
 }
 
 export interface IInstallable {

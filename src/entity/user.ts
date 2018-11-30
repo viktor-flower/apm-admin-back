@@ -1,16 +1,18 @@
-import { inject, injectable } from 'inversify'
 import { CType, IConfig, IInstallable } from '../declaration'
+import { inject, injectable } from 'inversify'
 import { DbContainer } from '../container/db'
 import { ObjectID } from 'bson'
 import { DeleteWriteOpResultObject, UpdateWriteOpResult } from 'mongodb'
 import * as _ from 'lodash'
 import { validator, schemaRules } from '../validator'
+import { RoleEntity } from './role'
 
 export interface IUserData {
   _id?: ObjectID
   name: string
   title: string
   description: string
+  roleIds?: ObjectID[] | string[]
 }
 
 export const UserDataSchema = {
@@ -19,7 +21,8 @@ export const UserDataSchema = {
     _id: schemaRules.mongoId,
     name: schemaRules.simpleString,
     title: schemaRules.simpleString,
-    description: schemaRules.simpleString
+    description: schemaRules.simpleString,
+    roleIds: schemaRules.MongoIds
   },
   required: ['name', 'title']
 }
@@ -28,10 +31,24 @@ export const UserDataSchema = {
 export class UserEntity implements IInstallable {
   private collectionName = 'user'
 
-  @inject(CType.Config)
-  protected config!: IConfig
-  @inject(CType.Db)
-  protected dbContainer!: DbContainer
+  constructor (
+    @inject(CType.Config)
+    protected config: IConfig,
+    @inject(CType.Db)
+    protected dbContainer: DbContainer,
+    @inject(CType.Entity.Role)
+    protected roleEntity: RoleEntity
+  ) {
+    this.roleEntity.registerPostDeleteBuilder(async (_id) => {
+      await this.clearRoleId(_id)
+    })
+  }
+
+  public async clearRoleId (_id: ObjectID) {
+    const db = await this.dbContainer.getDb()
+
+    return db.collection(this.collectionName).updateMany({ }, { $pull: { roleIds: _id } })
+  }
 
   public async create (user: IUserData): Promise<ObjectID> {
     const res = validator.validate(user, UserDataSchema)

@@ -32,8 +32,8 @@ export class DbContainer {
       return Promise.resolve(this.db)
     }
 
-    let dbConf = this.config.db
-    let client: MongoClient = await this.getClient()
+    const dbConf = this.config.db
+    const client: MongoClient = await this.getClient()
     return this.db = client.db(dbConf.name)
   }
 
