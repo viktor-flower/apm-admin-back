@@ -20,6 +20,11 @@ export type IConfig = {
   }
 }
 
+export interface ITokenData {
+  id: string
+  iat?: string
+}
+
 export const CType = {
   Config: Symbol.for('Config'),
   Core: Symbol.for('Core'),
