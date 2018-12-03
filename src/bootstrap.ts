@@ -19,7 +19,7 @@ export function resolveConfig (configFile: string | null = null): IConfig {
     if (process.env.configFile) {
       configFile = process.env.configFile
     } else {
-      configFile = 'default.js'
+      configFile = '../config/default.js'
     }
   }
 
