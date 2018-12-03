@@ -30,12 +30,14 @@ export class ShellContainer implements IInstallable, IDisposable {
     // Entity.
     await this.permissionEntity.install()
     await this.roleEntity.install()
+    await this.userEntity.install()
   }
 
   async uninstall () {
     // Entity.
     await this.permissionEntity.uninstall()
     await this.roleEntity.uninstall()
+    await this.userEntity.uninstall()
   }
 
 }

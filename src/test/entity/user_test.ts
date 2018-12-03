@@ -4,14 +4,15 @@ import { CType } from '../../declaration'
 import { IUserData, UserEntity } from '../../entity/user'
 import should from 'should'
 import _ from 'lodash'
-import { IPermissionData } from '../../entity/permission'
 import { IRoleData, RoleEntity } from '../../entity/role'
 import { ObjectID } from 'bson'
+import { CoreContainer } from '../../container/core'
 
 describe('User model', () => {
   const config = resolveConfig()
   const container = bootstrapShell(config)
   const roleEntity = container.get<RoleEntity>(CType.Entity.Role)
+  const coreContainer = container.get<CoreContainer>(CType.Core)
   const shellContainer = container.get<ShellContainer>(CType.Shell)
   const userEntity = container.get<UserEntity>(CType.Entity.User)
 
@@ -21,15 +22,25 @@ describe('User model', () => {
 
   it('Create/get/update/delete', async () => {
     const user: IUserData = {
-      name: 'perm_name',
+      name: 'user_name',
       title: 'User Title',
+      password: 'a password',
       description: 'The description of the user.'
     }
 
     // Create.
-    await userEntity.create(_.clone(user))
-    await userEntity.create(_.clone(user))
-    await userEntity.create(_.clone(user))
+    await userEntity.create({
+      ..._.clone(user),
+      name: 'user_name_a'
+    })
+    await userEntity.create({
+      ..._.clone(user),
+      name: 'user_name_b'
+    })
+    await userEntity.create({
+      ..._.clone(user),
+      name: 'user_name_c'
+    })
     const userId = await userEntity.create(user)
     should(userId.toHexString().length).above(1)
 
@@ -52,6 +63,23 @@ describe('User model', () => {
     // List.
     const users = await userEntity.list()
     should(users.length).above(0)
+
+    // The password field is filtered.
+    should(users[0].password).undefined()
+  })
+
+  it('Token validation', async () => {
+    const user: IUserData = {
+      name: 'user_test',
+      title: 'User Test',
+      password: 'testPassword',
+      description: 'The description of the user.'
+    }
+    const userId = await userEntity.create(user)
+    const token = await userEntity.generateToken('user_test', 'testPassword')
+    should(token.length).above(0)
+    const tokenData = coreContainer.decodeToken(token)
+    should(userId.toHexString()).equal(tokenData.id)
   })
 
   it('Role relation', async () => {
@@ -70,6 +98,7 @@ describe('User model', () => {
     const user: IUserData = {
       name: 'user_name',
       title: 'User Title*',
+      password: 'a password',
       description: 'The description of the user.',
       roleIds: [roleIdA, roleIdB]
     }

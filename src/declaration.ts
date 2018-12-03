@@ -22,7 +22,7 @@ export type IConfig = {
 
 export interface ITokenData {
   id: string
-  iat?: string
+  iat?: number
 }
 
 export const CType = {

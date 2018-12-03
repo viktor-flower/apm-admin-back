@@ -7,10 +7,28 @@ import bodyParser from 'body-parser'
 import { Application } from 'express'
 
 export function bootstrapServer (config: IConfig): Container {
-  const container: Container = bootstrapShell(config)
-
-  return container
+  return bootstrapShell(config)
 }
+
+// export function tokenProcessor (key: string) {
+//   return (request: IAppRequest, response: express.Response, next: Function): void => {
+//     if (!request.context) {
+//       request.context = new AppContext(request, response);
+//     }
+//     let Key = key.charAt(0).toUpperCase() + key.slice(1);
+//     let str: string = request.get(`${Key}Authorization`);
+//     if (!!str) {
+//       let authorizationType = str.substr(0, 6);
+//       let encryptedToken: string = '';
+//       if (authorizationType == 'bearer') {
+//         encryptedToken = str.substr(7, str.length - 1);
+//         request.context.encryptedToken = encryptedToken;
+//         request.context[`${key}TokenData`] = this.coreContainer.decodeToken(encryptedToken);
+//       }
+//     }
+//     next()
+//   }
+// }
 
 export function buildApp (container: Container): Application {
   const server = new InversifyExpressServer(container)
@@ -20,9 +38,7 @@ export function buildApp (container: Container): Application {
     }))
     app.use(bodyParser.json())
   })
-  const app = server.build()
-
-  return app
+  return server.build()
 }
 
 export function buildListener () {
