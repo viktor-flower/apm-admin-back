@@ -1,10 +1,13 @@
 import { Container } from 'inversify'
 import { IConfig } from './declaration'
 import { bootstrapShell, resolveConfig } from './bootstrap'
-import './controller/admin'
 import { InversifyExpressServer } from 'inversify-express-utils'
 import bodyParser from 'body-parser'
 import { Application } from 'express'
+
+// Registers controllers.
+import './controller/admin'
+import './controller/service'
 
 export function bootstrapServer (config: IConfig): Container {
   return bootstrapShell(config)

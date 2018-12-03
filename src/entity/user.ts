@@ -83,10 +83,10 @@ export class UserEntity implements IInstallable {
     return db.collection(this.collectionName).deleteOne({ _id })
   }
 
-  public async save (post: IUserData): Promise<UpdateWriteOpResult> {
+  public async save (user: IUserData): Promise<UpdateWriteOpResult> {
     const db = await this.dbContainer.getDb()
 
-    return db.collection(this.collectionName).updateOne({ _id: post._id }, { $set: post })
+    return db.collection(this.collectionName).updateOne({ _id: user._id }, { $set: user })
   }
 
   public async generateToken (name: string, password: string): Promise<string> {

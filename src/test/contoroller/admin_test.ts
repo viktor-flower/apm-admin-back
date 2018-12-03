@@ -35,6 +35,10 @@ describe('Controller Admin', () => {
     await shellContainer.dispose()
   })
 
+  describe('CRUD user', () => {
+
+  })
+
   describe('Action get-token', () => {
     it('Right', async () => {
       const response = await request(app)
