@@ -28,6 +28,7 @@ export interface ITokenData {
 export const CType = {
   Config: Symbol.for('Config'),
   Core: Symbol.for('Core'),
+  Authentication: Symbol.for('Authentication'),
   Db: Symbol.for('Db'),
   InitialData: Symbol.for('InitialData'),
   Shell: Symbol.for('Shell'),
@@ -35,6 +36,10 @@ export const CType = {
     Permission: Symbol.for('Permission'),
     Role: Symbol.for('Role'),
     User: Symbol.for('User')
+  },
+  Middleware: {
+    IsAuthenticated: Symbol.for('IsAuthenticated'),
+    IsAnonymouse: Symbol.for('IsAnonymouse')
   }
 }
 

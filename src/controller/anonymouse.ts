@@ -1,9 +1,10 @@
 import { controller, httpGet, interfaces } from 'inversify-express-utils'
 
 import Controller = interfaces.Controller
+import { CType } from '../declaration'
 
-@controller('/service')
-export class ServiceController implements Controller {
+@controller('/anonymouse', CType.Middleware.IsAnonymouse)
+export class AnonymouseController implements Controller {
 
   @httpGet('/test')
   private test (): string {

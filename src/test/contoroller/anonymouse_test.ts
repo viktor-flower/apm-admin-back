@@ -4,9 +4,9 @@ import { CType } from '../../declaration'
 import { ShellContainer } from '../../container/shell'
 import request from 'supertest'
 import should from 'should'
-import { IUserData, UserEntity } from '../../entity/user'
+import { UserEntity } from '../../entity/user'
 
-describe('Controller Service', () => {
+describe('Controller Anonymouse', () => {
   const config = resolveConfig()
   const container = bootstrapServer(config)
   const app = buildApp(container)
@@ -24,7 +24,7 @@ describe('Controller Service', () => {
 
   it('Action test', async () => {
     const response = await request(app)
-      .get('/service/test')
+      .get('/anonymouse/test')
       .expect(200)
     should(response.text).equal('test')
   })

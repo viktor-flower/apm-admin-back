@@ -4,9 +4,8 @@ import { CType } from '../../declaration'
 import { ShellContainer } from '../../container/shell'
 import request from 'supertest'
 import should from 'should'
-import {IUserData, UserEntity} from '../../entity/user'
-import _ from 'lodash'
-import {CoreContainer} from '../../container/core'
+import { IUserData, UserEntity } from '../../entity/user'
+import { CoreContainer } from '../../container/core'
 
 describe('Controller Admin', () => {
   const config = resolveConfig()

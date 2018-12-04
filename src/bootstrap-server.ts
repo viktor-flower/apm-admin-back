@@ -1,5 +1,5 @@
 import { Container } from 'inversify'
-import { IConfig } from './declaration'
+import { CType, IConfig } from './declaration'
 import { bootstrapShell, resolveConfig } from './bootstrap'
 import { InversifyExpressServer } from 'inversify-express-utils'
 import bodyParser from 'body-parser'
@@ -8,9 +8,19 @@ import { Application } from 'express'
 // Registers controllers.
 import './controller/admin'
 import './controller/service'
+import './controller/anonymouse'
+import { IsAuthentiticatedMiddleware } from './middleware/is-authenticated'
+import { IsAnonymouseMiddleware } from './middleware/is-anonymouse'
+import { AuthenticationContainer } from './container/authentication'
 
 export function bootstrapServer (config: IConfig): Container {
-  return bootstrapShell(config)
+  const container = bootstrapShell(config)
+
+  container.bind<AuthenticationContainer>(CType.Authentication).to(AuthenticationContainer).inSingletonScope()
+  container.bind<IsAuthentiticatedMiddleware>(CType.Middleware.IsAuthenticated).to(IsAuthentiticatedMiddleware).inSingletonScope()
+  container.bind<IsAnonymouseMiddleware>(CType.Middleware.IsAnonymouse).to(IsAnonymouseMiddleware).inSingletonScope()
+
+  return container
 }
 
 // export function tokenProcessor (key: string) {
@@ -34,7 +44,7 @@ export function bootstrapServer (config: IConfig): Container {
 // }
 
 export function buildApp (container: Container): Application {
-  const server = new InversifyExpressServer(container)
+  const server = new InversifyExpressServer(container, null, null, null, AuthenticationContainer)
   server.setConfig((app) => {
     app.use(bodyParser.urlencoded({
       extended: true

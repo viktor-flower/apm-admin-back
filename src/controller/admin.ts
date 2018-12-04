@@ -1,21 +1,27 @@
-import {controller, httpGet, httpPost, interfaces, request, requestParam, response} from 'inversify-express-utils'
+import {
+  BaseHttpController,
+  controller,
+  httpGet,
+  httpPost,
+  interfaces,
+  request,
+  requestParam,
+  response
+} from 'inversify-express-utils'
 
-import Controller = interfaces.Controller
 import { CType } from '../declaration'
 import { inject } from 'inversify'
 import { CoreContainer } from '../container/core'
 import { UserEntity } from '../entity/user'
 import { NextFunction, Request, Response } from 'express'
-import {ObjectID} from 'mongodb'
+import { ObjectID } from 'mongodb'
 
 @controller('/admin')
-export class AdminController implements Controller {
-  constructor (
-    @inject(CType.Core)
-    private coreContainer: CoreContainer,
-    @inject(CType.Entity.User)
-    private userEntity: UserEntity
-  ) {}
+export class AdminController extends BaseHttpController {
+  @inject(CType.Core)
+  private coreContainer!: CoreContainer
+  @inject(CType.Entity.User)
+  private userEntity!: UserEntity
 
   @httpGet('/user/list')
   private async userList (request: Request, response: Response, next: NextFunction) {
