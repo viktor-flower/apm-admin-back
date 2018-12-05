@@ -17,10 +17,6 @@ export class InitialDataContainer {
   @inject(CType.Shell)
   private shellContainer!: ShellContainer
 
-  test (): string {
-    return 'testable'
-  }
-
   async uploadInitialData () {
     await this.shellContainer.install()
     await Promise.all(data.permisions.map(async (permission: any) => {

@@ -63,10 +63,47 @@ export class UserEntity implements IInstallable {
     return result.insertedId
   }
 
-  public async getFull (_id: ObjectID): Promise<IUserData> {
+  public async getFull (_id: ObjectID): Promise<any> {
     const db = await this.dbContainer.getDb()
 
-    return db.collection(this.collectionName).findOne({ _id })
+    return db.collection(this.collectionName).aggregate([
+      {
+        $match: { _id }
+      },
+      {
+        $unwind: '$roleIds'
+      },
+      {
+        $lookup: {
+          localField: 'roleIds',
+          from: 'role',
+          foreignField: '_id',
+          as: 'role'
+        }
+      },
+      {
+        $unwind: {
+          path: '$role',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $lookup: {
+          localField: 'role.permissionIds',
+          from: 'permission',
+          foreignField: '_id',
+          as: 'role.permissions'
+        }
+      },
+      {
+        $group: {
+          _id: '$_id',
+          name: { $first: '$name' },
+          roles: { $push: '$role' }
+        }
+      }
+    ])
+      .toArray()
   }
 
   public async get (_id: ObjectID): Promise<IUserData> {

@@ -10,7 +10,7 @@ export interface IPermissionData {
   _id?: ObjectID
   name: string
   title: string
-  description: string
+  description?: string
 }
 
 export const PermissionDataSchema = {

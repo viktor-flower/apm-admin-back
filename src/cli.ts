@@ -1,8 +1,8 @@
 import commander from 'commander'
-import {bootstrapShell, resolveConfig} from './bootstrap'
-import {CType} from './declaration'
-import {InitialDataContainer} from './container/initial-data'
-import {ShellContainer} from './container/shell'
+import { bootstrapShell, resolveConfig } from './bootstrap'
+import { CType } from './declaration'
+import { InitialDataContainer } from './container/initial-data'
+import { ShellContainer } from './container/shell'
 
 commander
   .command('initial-data')

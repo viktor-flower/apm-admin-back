@@ -9,7 +9,8 @@
     "tslint": "tslint -c ./tslint.json 'src/**/*.ts'",
     "tslint-fix": "tslint -c ./tslint.json 'src/**/*.ts' --fix",
     "compile": "tsc",
-    "compile-watch": "tsc -w"
+    "compile-watch": "tsc -w",
+    "cli": "dist/cli.js"
   },
   "repository": {
     "type": "git",
