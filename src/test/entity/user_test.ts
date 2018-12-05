@@ -23,7 +23,6 @@ describe('User model', () => {
   it('Create/get/update/delete', async () => {
     const user: IUserData = {
       name: 'user_name',
-      title: 'User Title',
       password: 'a password',
       description: 'The description of the user.'
     }
@@ -71,7 +70,6 @@ describe('User model', () => {
   it('Token validation', async () => {
     const user: IUserData = {
       name: 'user_test',
-      title: 'User Test',
       password: 'testPassword',
       description: 'The description of the user.'
     }
@@ -97,7 +95,6 @@ describe('User model', () => {
     const roleIdB = await roleEntity.create(roleB)
     const user: IUserData = {
       name: 'user_name',
-      title: 'User Title*',
       password: 'a password',
       description: 'The description of the user.',
       roleIds: [roleIdA, roleIdB]

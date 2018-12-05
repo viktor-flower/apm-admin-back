@@ -9,66 +9,51 @@ import {
   response
 } from 'inversify-express-utils'
 
-import { CType } from '../declaration'
+import { CType } from '../../declaration'
 import { inject } from 'inversify'
-import { CoreContainer } from '../container/core'
-import { UserEntity } from '../entity/user'
+import { CoreContainer } from '../../container/core'
+import { UserEntity } from '../../entity/user'
 import { NextFunction, Request, Response } from 'express'
 import { ObjectID } from 'mongodb'
 
-@controller('/admin')
-export class AdminController extends BaseHttpController {
+@controller('/admin/user')
+export class AdminUserController extends BaseHttpController {
   @inject(CType.Core)
   private coreContainer!: CoreContainer
   @inject(CType.Entity.User)
   private userEntity!: UserEntity
 
-  @httpGet('/user/list')
+  @httpGet('/list')
   private async userList (request: Request, response: Response, next: NextFunction) {
     const list = await this.userEntity.list()
     response.send({ list })
   }
 
-  @httpGet('/user/item/:id')
+  @httpGet('/item/:id')
   private async userItem (@requestParam('id') id: string, @response() response: Response) {
     const user = await this.userEntity.get(new ObjectID(id))
     response.send({ user })
   }
 
-  @httpGet('/user/delete/:id')
+  @httpGet('/delete/:id')
   private async userDelete (@requestParam('id') id: string, @response() response: Response) {
-    const user = await this.userEntity.delete(new ObjectID(id))
-    response.send({ success: true })
+    const success = await this.userEntity.delete(new ObjectID(id))
+    response.send({ success })
   }
 
-  @httpPost('/user/create')
+  @httpPost('/create')
   private async userCreate (@request() request: Request, @response() response: Response) {
-    const userId = await this.userEntity.create(request.body)
-    response.send({ success: true })
+    const { user } = request.body
+    const userId = await this.userEntity.create(user)
+    response.send({ _id: userId.toHexString() })
   }
 
-  @httpPost('/user/save')
+  @httpPost('/save')
   private async saveCreate (@request() request: Request, @response() response: Response) {
-    await this.userEntity.save(request.body)
+    const { user } = request.body
+    user._id = new ObjectID(user._id)
+    await this.userEntity.save(user)
     response.send({ success: true })
   }
 
-  @httpGet('/test')
-  private test (): string {
-    return 'test'
-  }
-
-  @httpPost('/get-token')
-  private async getToken (request: Request, response: Response, next: NextFunction) {
-    const { name, password } = request.body
-    const token = await this.userEntity.generateToken(name, password)
-    if (token) {
-      response
-        .status(200)
-        .send({ token })
-    } else {
-      response.status(403)
-        .send('')
-    }
-  }
 }

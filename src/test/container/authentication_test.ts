@@ -38,7 +38,6 @@ describe('Container Authentication', () => {
     before(async () => {
       const user: IUserData = {
         name: 'user_name',
-        title: 'User Title',
         password: 'a password',
         description: 'The description of the user.'
       }

@@ -2,7 +2,7 @@ import { CType, IConfig, IInstallable } from '../declaration'
 import { inject, injectable } from 'inversify'
 import { DbContainer } from '../container/db'
 import { ObjectID } from 'bson'
-import { DeleteWriteOpResultObject, UpdateWriteOpResult } from 'mongodb'
+import { UpdateWriteOpResult } from 'mongodb'
 import * as _ from 'lodash'
 import { validator, schemaRules } from '../validator'
 import { RoleEntity } from './role'
@@ -12,7 +12,6 @@ export interface IUserData {
   _id?: ObjectID
   name: string,
   password: string,
-  title: string
   description: string
   roleIds?: ObjectID[] | string[]
 }
@@ -23,11 +22,10 @@ export const UserDataSchema = {
     _id: schemaRules.mongoId,
     name: schemaRules.simpleString,
     password: schemaRules.simpleString,
-    title: schemaRules.simpleString,
     description: schemaRules.simpleString,
     roleIds: schemaRules.MongoIds
   },
-  required: ['name', 'title']
+  required: ['name']
 }
 
 @injectable()
@@ -65,6 +63,12 @@ export class UserEntity implements IInstallable {
     return result.insertedId
   }
 
+  public async getFull (_id: ObjectID): Promise<IUserData> {
+    const db = await this.dbContainer.getDb()
+
+    return db.collection(this.collectionName).findOne({ _id })
+  }
+
   public async get (_id: ObjectID): Promise<IUserData> {
     const db = await this.dbContainer.getDb()
 
@@ -77,10 +81,11 @@ export class UserEntity implements IInstallable {
     return db.collection(this.collectionName).findOne({ name })
   }
 
-  public async delete (_id: ObjectID): Promise<DeleteWriteOpResultObject> {
+  public async delete (_id: ObjectID): Promise<boolean> {
     const db = await this.dbContainer.getDb()
+    const result = await db.collection(this.collectionName).deleteOne({ _id })
 
-    return db.collection(this.collectionName).deleteOne({ _id })
+    return !!result.deletedCount && result.deletedCount > 0
   }
 
   public async save (user: IUserData): Promise<UpdateWriteOpResult> {

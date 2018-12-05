@@ -8,7 +8,7 @@ import { validator, schemaRules } from '../validator'
 import { PermissionEntity } from './permission'
 
 export interface IRoleData {
-  _id?: ObjectID | string
+  _id?: ObjectID
   name: string
   title: string
   description?: string
@@ -70,12 +70,12 @@ export class RoleEntity implements IInstallable {
     return db.collection(this.collectionName).findOne({ _id })
   }
 
-  public async delete (_id: ObjectID): Promise<DeleteWriteOpResultObject> {
+  public async delete (_id: ObjectID): Promise<boolean> {
     const db = await this.dbContainer.getDb()
     const result = await db.collection(this.collectionName).deleteOne({ _id })
 
     return Promise.all(this.postDeletePB.map((builder) => builder(_id)))
-      .then(() => result)
+      .then(() => !!result.deletedCount && result.deletedCount > 0)
   }
 
   public async save (post: IRoleData): Promise<UpdateWriteOpResult> {
