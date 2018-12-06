@@ -31,7 +31,8 @@ describe('Controller Admin role', () => {
       const role: IRoleData = {
         name: 'role_name',
         title: 'Role Title',
-        description: 'The description of the role.'
+        description: 'The description of the role.',
+        permissionIds: []
       }
 
       // Create.
@@ -53,7 +54,8 @@ describe('Controller Admin role', () => {
       const roleData: IRoleData = {
         name: 'test_role_name',
         title: 'Role Title',
-        description: 'The description of the role.'
+        description: 'The description of the role.',
+        permissionIds: []
       }
       const response = await request(app)
         .post('/admin/role/create')

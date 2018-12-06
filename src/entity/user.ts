@@ -101,6 +101,11 @@ export class UserEntity implements IInstallable {
           name: { $first: '$name' },
           roles: { $push: '$role' }
         }
+      },
+      {
+        $project: {
+          'roles.permissionIds': 0
+        }
       }
     ])
       .toArray()
@@ -109,7 +114,30 @@ export class UserEntity implements IInstallable {
   public async get (_id: ObjectID): Promise<IUserData> {
     const db = await this.dbContainer.getDb()
 
-    return db.collection(this.collectionName).findOne({ _id })
+    const array = await db.collection(this.collectionName).aggregate<IUserData>([
+      {
+        $match: { _id }
+      },
+      {
+        $unwind: '$roleIds'
+      },
+      {
+        $lookup: {
+          localField: 'roleIds',
+          from: 'role',
+          foreignField: '_id',
+          as: 'role'
+        }
+      },
+      {
+        $project: {
+          roleIds: 0
+        }
+      }
+    ])
+      .toArray()
+
+    return array[0]
   }
 
   public async getByName (name: string): Promise<IUserData> {
@@ -153,6 +181,19 @@ export class UserEntity implements IInstallable {
       },
       {
         $project: { password: 0 }
+      },
+      {
+        $lookup: {
+          localField: 'roleIds',
+          from: 'role',
+          foreignField: '_id',
+          as: 'roles'
+        }
+      },
+      {
+        $project: {
+          roleIds: 0
+        }
       }
     ]).toArray()
   }

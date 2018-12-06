@@ -22,7 +22,7 @@ describe('User model', () => {
     await shellContainer.install()
   })
 
-  xit('Create/get/update/delete', async () => {
+  it('Create/get/update/delete', async () => {
     const user: IUserData = {
       name: 'user_name',
       password: 'a password',
@@ -69,7 +69,7 @@ describe('User model', () => {
     should(users[0].password).undefined()
   })
 
-  xit('Token validation', async () => {
+  it('Token validation', async () => {
     const user: IUserData = {
       name: 'user_test',
       password: 'testPassword',

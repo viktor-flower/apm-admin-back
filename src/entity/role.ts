@@ -2,7 +2,7 @@ import { inject, injectable } from 'inversify'
 import { CType, IConfig, IInstallable, IPostDeleteBuilder } from '../declaration'
 import { DbContainer } from '../container/db'
 import { ObjectID } from 'bson'
-import { DeleteWriteOpResultObject, UpdateWriteOpResult } from 'mongodb'
+import { UpdateWriteOpResult } from 'mongodb'
 import * as _ from 'lodash'
 import { validator, schemaRules } from '../validator'
 import { PermissionEntity } from './permission'
@@ -12,7 +12,7 @@ export interface IRoleData {
   name: string
   title: string
   description?: string
-  permissionIds?: ObjectID[] | string[]
+  permissionIds: ObjectID[] | string[]
 }
 
 export const RoleDataSchema = {
@@ -24,7 +24,7 @@ export const RoleDataSchema = {
     description: schemaRules.simpleString,
     permissionIds: schemaRules.MongoIds
   },
-  required: ['name', 'title']
+  required: ['name', 'title', 'permissionIds']
 }
 
 @injectable()
@@ -67,7 +67,33 @@ export class RoleEntity implements IInstallable {
   public async get (_id: ObjectID): Promise<IRoleData> {
     const db = await this.dbContainer.getDb()
 
-    return db.collection(this.collectionName).findOne({ _id })
+    const query = [
+      {
+        $match: { _id }
+      },
+      {
+        $unwind: {
+          path: '$permissionIds',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $lookup: {
+          localField: 'permissionIds',
+          from: 'permission',
+          foreignField: '_id',
+          as: 'permissions'
+        }
+      },
+      {
+        $project: {
+          permissionIds: 0
+        }
+      }
+    ]
+    const list = await db.collection(this.collectionName).aggregate(query).toArray()
+
+    return list[0] as IRoleData
   }
 
   public async delete (_id: ObjectID): Promise<boolean> {
@@ -86,12 +112,29 @@ export class RoleEntity implements IInstallable {
 
   public async list (): Promise<IRoleData[]> {
     const db = await this.dbContainer.getDb()
-
-    return db.collection(this.collectionName).aggregate([
+    const query = [
       {
-        $sort: { date: -1 }
+        $unwind: {
+          path: '$permissionIds',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $lookup: {
+          localField: 'permissionIds',
+          from: 'permission',
+          foreignField: '_id',
+          as: 'permissions'
+        }
+      },
+      {
+        $project: {
+          permissionIds: 0
+        }
       }
-    ]).toArray()
+    ]
+
+    return db.collection(this.collectionName).aggregate(query).toArray()
   }
 
   async install (): Promise<void> {

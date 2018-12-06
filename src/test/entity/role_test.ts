@@ -19,10 +19,24 @@ describe('Role model', () => {
   })
 
   it('Create/get/update/delete', async () => {
+    const permissionA: IPermissionData = {
+      name: 'a_perm_name_a',
+      title: 'A Permission Title A',
+      description: 'The description of the permission.'
+    }
+    const permissionB: IPermissionData = {
+      name: 'a_perm_name_b',
+      title: 'A Permission Title B',
+      description: 'The descriptsion of the permission.'
+    }
+    const permissionIdA = await permissionEntity.create(permissionA)
+    const permissionIdB = await permissionEntity.create(permissionB)
+
     const role: IRoleData = {
-      name: 'perm_name',
+      name: 'role_name',
       title: 'Role Title',
-      description: 'The description of the role.'
+      description: 'The description of the role.',
+      permissionIds: [permissionIdA, permissionIdB]
     }
 
     // Create.
@@ -47,8 +61,6 @@ describe('Role model', () => {
     await roleEntity.delete(roleId)
     const nullRole = await roleEntity.get(roleId)
     should(nullRole).is.null()
-
-    // The delete event has been fired. @todo
 
     // List.
     const roles = await roleEntity.list()

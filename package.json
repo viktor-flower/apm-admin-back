@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "server:listen": "node dist/server.js",
+    "server:listen": "node-dev dist/server.js",
     "test": "configFile=../config/testing.js npm-run mocha dist/**/*_test.js",
     "tslint": "tslint -c ./tslint.json 'src/**/*.ts'",
     "tslint-fix": "tslint -c ./tslint.json 'src/**/*.ts' --fix",
@@ -34,6 +34,7 @@
     "@types/node": "^10.12.10",
     "@types/supertest": "^2.0.6",
     "mocha": "^5.2.0",
+    "node-dev": "^3.1.3",
     "node-mocks-http": "^1.7.3",
     "supertest": "^3.3.0",
     "tslint": "^5.11.0",
