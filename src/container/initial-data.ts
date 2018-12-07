@@ -31,6 +31,7 @@ export class InitialDataContainer {
       role.permissionIds = role.permissionNames.map((name: string) => {
         return data.permisions.find((permission: any) => permission.name === name)!._id
       })
+      delete role.permissionNames
       return {
         ...role,
         _id: await this.roleEntity.create(role)
@@ -42,6 +43,7 @@ export class InitialDataContainer {
         .map((name: string) => {
           return data.roles.find((role: any) => role.name === name)!._id
         })
+      delete user.roleNames
 
       return {
         ...user,

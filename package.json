@@ -10,7 +10,9 @@
     "tslint-fix": "tslint -c ./tslint.json 'src/**/*.ts' --fix",
     "compile": "tsc",
     "compile-watch": "tsc -w",
-    "cli": "dist/cli.js"
+    "cli": "dist/cli.js",
+    "cli:uninstall": "node dist/cli.js uninstall",
+    "cli:initial-data": "node dist/cli.js initial-data"
   },
   "repository": {
     "type": "git",

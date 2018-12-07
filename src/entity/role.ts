@@ -86,8 +86,19 @@ export class RoleEntity implements IInstallable {
         }
       },
       {
-        $project: {
-          permissionIds: 0
+        $unwind: {
+          path: '$permissions',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $group: {
+          _id: '$_id',
+          name: { $first: '$name' },
+          title: { $first: '$title' },
+          system: { $first: '$system' },
+          permissions: { $push: '$permissions' },
+          permissionIds: { $push: '$permissionIds' }
         }
       }
     ]
@@ -104,10 +115,10 @@ export class RoleEntity implements IInstallable {
       .then(() => !!result.deletedCount && result.deletedCount > 0)
   }
 
-  public async save (post: IRoleData): Promise<UpdateWriteOpResult> {
+  public async save (role: IRoleData): Promise<UpdateWriteOpResult> {
     const db = await this.dbContainer.getDb()
 
-    return db.collection(this.collectionName).updateOne({ _id: post._id }, { $set: post })
+    return db.collection(this.collectionName).updateOne({ _id: role._id }, { $set: role })
   }
 
   public async list (): Promise<IRoleData[]> {
@@ -125,6 +136,21 @@ export class RoleEntity implements IInstallable {
           from: 'permission',
           foreignField: '_id',
           as: 'permissions'
+        }
+      },
+      {
+        $unwind: {
+          path: '$permissions',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $group: {
+          _id: '$_id',
+          name: { $first: '$name' },
+          title: { $first: '$title' },
+          system: { $first: '$system' },
+          permissions: { $push: '$permission' }
         }
       },
       {

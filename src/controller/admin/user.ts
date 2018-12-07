@@ -44,6 +44,8 @@ export class AdminUserController extends BaseHttpController {
   @httpPost('/create')
   private async userCreate (@request() request: Request, @response() response: Response) {
     const { user } = request.body
+    user.roleIds = (user.roleIds as string[]).map((_id) => new ObjectID(_id))
+    user.password = 'default password have to be reseted'
     const userId = await this.userEntity.create(user)
     response.send({ _id: userId.toHexString() })
   }
@@ -52,6 +54,7 @@ export class AdminUserController extends BaseHttpController {
   private async saveCreate (@request() request: Request, @response() response: Response) {
     const { user } = request.body
     user._id = new ObjectID(user._id)
+    user.roleIds = (user.roleIds as string[]).map((_id) => new ObjectID(_id))
     await this.userEntity.save(user)
     response.send({ success: true })
   }

@@ -44,6 +44,7 @@ export class AdminRoleController extends BaseHttpController {
   @httpPost('/create')
   private async roleCreate (@request() request: Request, @response() response: Response) {
     const { role } = request.body
+    role.permissionIds = (role.permissionIds as string[]).map((_id) => new ObjectID(_id))
     const roleId = await this.roleEntity.create(role)
     response.send({ _id: roleId.toHexString() })
   }
@@ -52,6 +53,7 @@ export class AdminRoleController extends BaseHttpController {
   private async saveCreate (@request() request: Request, @response() response: Response) {
     const { role } = request.body
     role._id = new ObjectID(role._id)
+    role.permissionIds = (role.permissionIds as string[]).map((_id) => new ObjectID(_id))
     await this.roleEntity.save(role)
     response.send({ success: true })
   }

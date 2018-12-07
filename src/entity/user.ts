@@ -119,19 +119,32 @@ export class UserEntity implements IInstallable {
         $match: { _id }
       },
       {
-        $unwind: '$roleIds'
+        $unwind: {
+          path: '$roleIds',
+          preserveNullAndEmptyArrays: true
+        }
       },
       {
         $lookup: {
           localField: 'roleIds',
           from: 'role',
           foreignField: '_id',
-          as: 'role'
+          as: 'roles'
         }
       },
       {
-        $project: {
-          roleIds: 0
+        $unwind: {
+          path: '$roles',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $group: {
+          _id: '$_id',
+          name: { $first: '$name' },
+          description: { $first: '$description' },
+          roles: { $push: '$roles' },
+          roleIds: { $push: '$roleIds' }
         }
       }
     ])
