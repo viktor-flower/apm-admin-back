@@ -5,14 +5,15 @@ import { ObjectID } from 'bson'
 import { UpdateWriteOpResult } from 'mongodb'
 import * as _ from 'lodash'
 import { validator, schemaRules } from '../validator'
-import { PermissionEntity } from './permission'
+import { IPermissionData, PermissionEntity } from './permission'
 
 export interface IRoleData {
   _id?: ObjectID
   name: string
   title: string
   description?: string
-  permissionIds: ObjectID[] | string[]
+  permissionIds?: ObjectID[] | string[],
+  permissions?: IPermissionData[]
 }
 
 export const RoleDataSchema = {

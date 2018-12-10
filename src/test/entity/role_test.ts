@@ -60,7 +60,7 @@ describe('Role model', () => {
     // Delete.
     await roleEntity.delete(roleId)
     const nullRole = await roleEntity.get(roleId)
-    should(nullRole).is.null()
+    should(nullRole).is.undefined()
 
     // List.
     const roles = await roleEntity.list()

@@ -93,7 +93,7 @@ describe('Controller Admin role', () => {
         .expect(200)
       should(response.body['success']).true()
       const loadedRole = await roleEntity.get(roleId)
-      should(loadedRole).is.null()
+      should(loadedRole).is.undefined()
     })
 
   })

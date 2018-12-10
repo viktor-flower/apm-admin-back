@@ -53,7 +53,8 @@ describe('Controller Admin user', () => {
       const userData: IUserData = {
         name: 'test_user_name',
         password: 'a password',
-        description: 'The description of the user.'
+        description: 'The description of the user.',
+        roleIds: []
       }
       const response = await request(app)
         .post('/admin/user/create')
@@ -91,7 +92,7 @@ describe('Controller Admin user', () => {
         .expect(200)
       should(response.body['success']).true()
       const loadedUser = await userEntity.get(userId)
-      should(loadedUser).is.null()
+      should(loadedUser).is.undefined()
     })
 
   })

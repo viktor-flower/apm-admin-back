@@ -5,15 +5,16 @@ import { ObjectID } from 'bson'
 import { UpdateWriteOpResult } from 'mongodb'
 import * as _ from 'lodash'
 import { validator, schemaRules } from '../validator'
-import { RoleEntity } from './role'
+import { IRoleData, RoleEntity } from './role'
 import { CoreContainer } from '../container/core'
 
 export interface IUserData {
   _id?: ObjectID
-  name: string,
-  password: string,
+  name: string
+  password: string
   description: string
   roleIds?: ObjectID[] | string[]
+  roles?: IRoleData[]
 }
 
 export const UserDataSchema = {
@@ -65,8 +66,7 @@ export class UserEntity implements IInstallable {
 
   public async getFull (_id: ObjectID): Promise<any> {
     const db = await this.dbContainer.getDb()
-
-    return db.collection(this.collectionName).aggregate([
+    const array = await db.collection(this.collectionName).aggregate([
       {
         $match: { _id }
       },
@@ -109,6 +109,8 @@ export class UserEntity implements IInstallable {
       }
     ])
       .toArray()
+
+    return array[0]
   }
 
   public async get (_id: ObjectID): Promise<IUserData> {

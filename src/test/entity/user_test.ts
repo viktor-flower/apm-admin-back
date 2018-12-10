@@ -59,7 +59,7 @@ describe('User model', () => {
     // Delete.
     await userEntity.delete(userId)
     const nullUser = await userEntity.get(userId)
-    should(nullUser).is.null()
+    should(nullUser).is.undefined()
 
     // List.
     const users = await userEntity.list()

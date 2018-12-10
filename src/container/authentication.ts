@@ -13,15 +13,31 @@ class UserPrincipal implements interfaces.Principal {
   public constructor (details: any) {
     this.details = details
   }
+
   public isAuthenticated (): Promise<boolean> {
     return Promise.resolve(!!this.details && !!this.details._id)
   }
-  public isResourceOwner (resourceId: any): Promise<boolean> {
-    return Promise.resolve(resourceId === 1111)
+
+  public async isResourceOwner (resourceId: any): Promise<boolean> {
+    const isAuthenticated = await this.isAuthenticated()
+    if (!isAuthenticated) {
+      return Promise.resolve(false)
+    }
+    const permissionNames: string[] = []
+    this.details!.roles!.forEach((role) => {
+      role!.permissions!.forEach((permission) => {
+        permissionNames.push(permission.name)
+      })
+    })
+    const hasAccess = permissionNames.indexOf(resourceId) > -1
+
+    return Promise.resolve(hasAccess)
   }
+
   public isInRole (role: string): Promise<boolean> {
     return Promise.resolve(role === 'admin')
   }
+
 }
 
 @injectable()
@@ -47,7 +63,7 @@ export class AuthenticationContainer implements AuthProvider {
     }
     const encryptedToken = str.substr(7, str.length - 1)
     const tokenData = this.coreContainer.decodeToken(encryptedToken)
-    const user = await this.userEntity.get(new ObjectID(tokenData.id))
+    const user = await this.userEntity.getFull(new ObjectID(tokenData.id))
 
     return new UserPrincipal(user)
   }

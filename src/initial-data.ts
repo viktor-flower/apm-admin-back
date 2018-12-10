@@ -5,7 +5,9 @@ export const data = {
     { _id: undefined, name: 'manage_permissions', title: 'Manage Permissions', system: true },
     { _id: undefined, name: 'manage_roles', title: 'Manage Roles', system: true },
     { _id: undefined, name: 'manage_users', title: 'Manage Users', system: true },
-    { _id: undefined, name: 'fetch_any_user', title: 'Fetch any user', system: true }
+    { _id: undefined, name: 'fetch_any_user', title: 'Fetch any user', system: true },
+    { _id: undefined, name: 'fetch_own_acl', title: 'Fetch own ACL', system: true },
+    { _id: undefined, name: 'fetch_any_acl', title: 'Fetch any ACL', system: true }
   ],
   roles: [
     {
@@ -20,7 +22,10 @@ export const data = {
       name: 'authneticated',
       title: 'Authenticated',
       system: true,
-      permissionNames: ['login_access']
+      permissionNames: [
+        'login_access',
+        'fetch_own_acl'
+      ]
     },
     {
       _id: undefined,
@@ -32,7 +37,8 @@ export const data = {
         'administer_service_access',
         'manage_permissions',
         'manage_roles',
-        'manage_users'
+        'fetch_own_acl',
+        'fetch_any_acl'
       ]
     },
     {
@@ -42,7 +48,9 @@ export const data = {
       system: true,
       permissionNames: [
         'login_access',
-        'fetch_any_user'
+        'fetch_any_user',
+        'fetch_own_acl',
+        'fetch_any_acl'
       ]
     }
   ],
