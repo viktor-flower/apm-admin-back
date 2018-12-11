@@ -7,12 +7,14 @@ import should from 'should'
 import { IUserData, UserEntity } from '../../../entity/user'
 import _ from 'lodash'
 import { ObjectID } from 'bson'
+import { CoreContainer } from '../../../container/core'
 
 describe('Controller Admin user', () => {
   const config = resolveConfig()
   const container = bootstrapServer(config)
   const app = buildApp(container)
   const userEntity = container.get<UserEntity>(CType.Entity.User)
+  const coreContainer = container.get<CoreContainer>(CType.Core)
   const shellContainer = container.get<ShellContainer>(CType.Shell)
 
   before(async () => {
@@ -84,6 +86,18 @@ describe('Controller Admin user', () => {
       should(user.name).equal(loadedUser.name)
     })
 
+    it('Set password', async () => {
+      const password = 'some new password'
+      const response = await request(app)
+        .post(`/admin/user/set-password`)
+        .send({ _id: userId, password })
+        .expect(200)
+      should(response.body.success).true()
+      const loadedUser = await userEntity.get(userId)
+      const valid = coreContainer.validateHash(password, loadedUser.password)
+      should(valid).equal(true)
+    })
+
     it('Delete', async () => {
       const user = await userEntity.get(userId)
       user.name = 'updated'
@@ -92,7 +106,7 @@ describe('Controller Admin user', () => {
         .expect(200)
       should(response.body['success']).true()
       const loadedUser = await userEntity.get(userId)
-      should(loadedUser).is.undefined()
+      should(!!loadedUser).is.false()
     })
 
   })

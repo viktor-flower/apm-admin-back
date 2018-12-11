@@ -31,7 +31,7 @@ export class AdminUserController extends BaseHttpController {
 
   @httpGet('/item/:id')
   private async userItem (@requestParam('id') id: string, @response() response: Response) {
-    const user = await this.userEntity.get(new ObjectID(id))
+    const user = await this.userEntity.getFull(new ObjectID(id))
     response.send({ user })
   }
 
@@ -57,6 +57,13 @@ export class AdminUserController extends BaseHttpController {
     user.roleIds = (user.roleIds as string[]).map((_id) => new ObjectID(_id))
     await this.userEntity.save(user)
     response.send({ success: true })
+  }
+
+  @httpPost('/set-password')
+  private async setPassword (request: Request, response: Response) {
+    const { _id, password } = request.body
+    const result = await this.userEntity.setPassword(new ObjectID(_id), password)
+    response.send({ success: result })
   }
 
 }

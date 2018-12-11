@@ -7,6 +7,7 @@ import * as _ from 'lodash'
 import { validator, schemaRules } from '../validator'
 import { IRoleData, RoleEntity } from './role'
 import { CoreContainer } from '../container/core'
+import { Error } from 'tslint/lib/error'
 
 export interface IUserData {
   _id?: ObjectID
@@ -71,7 +72,10 @@ export class UserEntity implements IInstallable {
         $match: { _id }
       },
       {
-        $unwind: '$roleIds'
+        $unwind: {
+          path: '$roleIds',
+          preserveNullAndEmptyArrays: true
+        }
       },
       {
         $lookup: {
@@ -113,46 +117,13 @@ export class UserEntity implements IInstallable {
     return array[0]
   }
 
+  /**
+   * Attention! It fetchs user hash.
+   */
   public async get (_id: ObjectID): Promise<IUserData> {
     const db = await this.dbContainer.getDb()
 
-    const array = await db.collection(this.collectionName).aggregate<IUserData>([
-      {
-        $match: { _id }
-      },
-      {
-        $unwind: {
-          path: '$roleIds',
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
-        $lookup: {
-          localField: 'roleIds',
-          from: 'role',
-          foreignField: '_id',
-          as: 'roles'
-        }
-      },
-      {
-        $unwind: {
-          path: '$roles',
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
-        $group: {
-          _id: '$_id',
-          name: { $first: '$name' },
-          description: { $first: '$description' },
-          roles: { $push: '$roles' },
-          roleIds: { $push: '$roleIds' }
-        }
-      }
-    ])
-      .toArray()
-
-    return array[0]
+    return db.collection(this.collectionName).findOne({ _id })
   }
 
   public async getByName (name: string): Promise<IUserData> {
@@ -169,9 +140,25 @@ export class UserEntity implements IInstallable {
   }
 
   public async save (user: IUserData): Promise<UpdateWriteOpResult> {
+    if (!user._id) {
+      throw new Error('Id is absent while object saving.')
+    }
     const db = await this.dbContainer.getDb()
 
+    // Restore password hash. Hash has to be updated by another method.
+    const _user = await this.get(user!._id as ObjectID)
+    user.password = _user.password
+
     return db.collection(this.collectionName).updateOne({ _id: user._id }, { $set: user })
+  }
+
+  public async setPassword (_id: ObjectID, password: string): Promise<any> {
+    const db = await this.dbContainer.getDb()
+    const result = await db.collection(this.collectionName).updateOne({ _id }, {$set: {
+      password: this.coreContainer.generateHash(password)
+    }})
+
+    return result.modifiedCount > 0
   }
 
   public async generateToken (name: string, password: string): Promise<string> {

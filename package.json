@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "server:listen": "node-dev dist/server.js",
+    "server:listen": "node-dev $NODE_DEBUG_OPTION dist/server.js",
     "test": "configFile=../config/testing.js npm-run mocha dist/**/*_test.js",
     "tslint": "tslint -c ./tslint.json 'src/**/*.ts'",
     "tslint-fix": "tslint -c ./tslint.json 'src/**/*.ts' --fix",

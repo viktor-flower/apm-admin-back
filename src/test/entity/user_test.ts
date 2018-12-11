@@ -18,6 +18,8 @@ describe('User model', () => {
   const userEntity = container.get<UserEntity>(CType.Entity.User)
   const permissionEntity = container.get<PermissionEntity>(CType.Entity.Permission)
 
+  let userId: ObjectID
+
   before(async () => {
     await shellContainer.install()
   })
@@ -42,7 +44,7 @@ describe('User model', () => {
       ..._.clone(user),
       name: 'user_name_c'
     })
-    const userId = await userEntity.create(user)
+    const userId = await userEntity.create(_.clone(user))
     should(userId.toHexString().length).above(1)
 
     // Get.
@@ -51,22 +53,32 @@ describe('User model', () => {
     should(user.name).equal(retrievedUser.name)
 
     // Save.
-    user.name = 'updated'
-    await userEntity.save(user)
-    const updatedRUser = await userEntity.get(userId)
-    should(updatedRUser.name).equal(user.name)
+    retrievedUser.name = 'updated'
+    retrievedUser.password = 'updated'
+    await userEntity.save(_.clone(retrievedUser))
+    let updatedRUser = await userEntity.get(userId)
+    should(updatedRUser.name).equal(retrievedUser.name)
+
+    // Password has to be changed by another method.
+    should(updatedRUser.password).not.equal(retrievedUser.password)
+
+    // Sets password.
+    await userEntity.setPassword(retrievedUser!._id as ObjectID, 'new password')
+    updatedRUser = await userEntity.get(userId)
+    const valid = coreContainer.validateHash('new password', updatedRUser.password)
+    should(valid).equal(true)
 
     // Delete.
     await userEntity.delete(userId)
     const nullUser = await userEntity.get(userId)
-    should(nullUser).is.undefined()
+    should(!!nullUser).false()
 
     // List.
     const users = await userEntity.list()
     should(users.length).above(0)
 
     // The password field is filtered.
-    should(users[0].password).undefined()
+    should(!!users[0].password).false()
   })
 
   it('Token validation', async () => {
@@ -107,11 +119,11 @@ describe('User model', () => {
       description: 'The description of the user.',
       roleIds: [roleIdA, roleIdB]
     }
-    const userId = await userEntity.create(user)
+    userId = await userEntity.create(user)
 
     // Get full
     const data = await userEntity.getFull(userId)
-    const _roleB = data[0].roles.find((r: any) => roleIdB.equals(r._id))
+    const _roleB = data.roles.find((r: any) => roleIdB.equals(r._id))
     const _permD = _roleB.permissions.find((p: any) => permIdD.equals(p._id))
     should(_permD._id.equals(permIdD))
 
@@ -123,11 +135,12 @@ describe('User model', () => {
     await roleEntity.delete(roleIdA)
     loadedUser = await userEntity.get(userId)
     foundUser = (loadedUser.roleIds! as ObjectID[]).find((_id) => roleIdA.equals(_id))
-    should(foundUser).undefined()
+    should(!!foundUser).false()
   })
 
-  it('getFull', () => {
-    should(true).equal(true)
+  it('getFull', async () => {
+    const user = await userEntity.getFull(userId)
+    should(!!user).true()
   })
 
   after(async () => {

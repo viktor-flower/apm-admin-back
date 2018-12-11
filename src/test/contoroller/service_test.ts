@@ -1,15 +1,15 @@
 import { bootstrapServer, buildApp } from '../../bootstrap-server'
 import { resolveConfig } from '../../bootstrap'
-import {CType, ITokenData} from '../../declaration'
+import { CType, ITokenData } from '../../declaration'
 import { ShellContainer } from '../../container/shell'
 import request from 'supertest'
 import should from 'should'
 import { IUserData, UserEntity } from '../../entity/user'
-import {ObjectID} from 'bson'
-import {IPermissionData, PermissionEntity} from '../../entity/permission'
-import {IRoleData, RoleEntity} from '../../entity/role'
+import { ObjectID } from 'bson'
+import { IPermissionData, PermissionEntity } from '../../entity/permission'
+import { IRoleData, RoleEntity } from '../../entity/role'
 import _ from 'lodash'
-import {CoreContainer} from '../../container/core'
+import { CoreContainer } from '../../container/core'
 
 describe('Controller Service', () => {
   const config = resolveConfig()
@@ -25,6 +25,7 @@ describe('Controller Service', () => {
   let userIdB!: ObjectID
   let permissionIdA!: ObjectID
   let permissionIdB!: ObjectID
+  let permissionIdC!: ObjectID
   let roleIdA!: ObjectID
   let roleIdB!: ObjectID
   let tokenA!: string
@@ -50,14 +51,20 @@ describe('Controller Service', () => {
       title: 'Fetch oen ACL',
       description: 'The descriptsion of the permission.'
     }
+    const permissionC: IPermissionData = {
+      name: 'fetch_any_acl',
+      title: 'Fetch any ACL',
+      description: 'The descriptsion of the permission.'
+    }
     permissionIdA = await permissionEntity.create(permissionA)
     permissionIdB = await permissionEntity.create(permissionB)
+    permissionIdC = await permissionEntity.create(permissionC)
 
     const role: IRoleData = {
       name: 'role_name',
       title: 'Role Title',
       description: 'The description of the role.',
-      permissionIds: [permissionIdA, permissionIdB]
+      permissionIds: [permissionIdA, permissionIdB, permissionIdC]
     }
     roleIdA = await roleEntity.create(_.clone(role))
     roleIdB = await roleEntity.create({
@@ -112,16 +119,17 @@ describe('Controller Service', () => {
         .get('/service/own-acl')
         .set('Authorization', `bearer ${tokenA}`)
         .expect(200)
-      //const { user } = response.body
-      //console.log(user);
+      const user = response.body
+      should(user._id).equal(userIdA.toHexString())
     })
   })
 
   it('Any ACL', async () => {
     const response = await request(app)
-      .get('/service/own-acl')
+      .get(`/service/acl/${userIdB.toHexString()}`)
       .set('Authorization', `bearer ${tokenA}`)
       .expect(200)
-    const { user } = response.body
+    const user = response.body
+    should(user._id).equal(userIdB.toHexString())
   })
 })

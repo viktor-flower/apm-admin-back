@@ -3,7 +3,7 @@ import { interfaces } from 'inversify-express-utils'
 import HttpContext = interfaces.HttpContext
 
 export function permission (permission: string): any {
-  return function (target: Object, key: string | symbol, descriptor: TypedPropertyDescriptor<Function>) {
+  return function (target: any, key: string | symbol, descriptor: TypedPropertyDescriptor<Function>) {
     const fn = descriptor.value as Handler
     descriptor.value = async (request: Request, response: Response, next: NextFunction) => {
       const context: HttpContext = Reflect.getMetadata(
@@ -12,8 +12,8 @@ export function permission (permission: string): any {
       )
       const hasAccess = await context.user.isResourceOwner(permission)
       if (hasAccess) {
-        return fn.call(target.constructor, request, response)
-        // return fn.call(target request, response)
+        target.httpContext = context
+        return fn.call(target, request, response)
       } else {
         response
           .status(403)
