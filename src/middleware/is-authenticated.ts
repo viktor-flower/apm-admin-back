@@ -15,6 +15,6 @@ export class IsAuthentiticatedMiddleware extends BaseMiddleware {
         .status(403)
         .end()
     }
-    next()
+    return next()
   }
 }

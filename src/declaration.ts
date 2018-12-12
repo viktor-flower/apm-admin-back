@@ -39,8 +39,25 @@ export const CType = {
   },
   Middleware: {
     IsAuthenticated: Symbol.for('IsAuthenticated'),
-    IsAnonymouse: Symbol.for('IsAnonymouse')
+    IsAnonymouse: Symbol.for('IsAnonymouse'),
+    Permission: Symbol.for('MiddlewarePermission')
   }
+}
+
+export enum ESystemRole {
+  ANONYMOUSE = 'SYSTEM:ANONYMOUSE',
+  AUTHENTICATED = 'SYSTEM:AUTHENTICATED',
+  ADMINISTER = 'SYSTEM:ADMINISTER'
+}
+
+export enum EAdminPermission {
+  LOGIN = 'ADMIN:LOGIN',
+  ADMIN_SERVICE_ACCESS = 'ADMIN:ADMIN_SERVICE_ACCESS',
+  MANAGE_PERMISSIONS = 'ADMIN:MANAGE_PERMISSIONS',
+  MANAGE_ROLES = 'ADMIN:MANAGE_ROLES',
+  MANAGE_USERS = 'ADMIN:MANAGE_USERS',
+  FETCH_OWN_ACL = 'SERVICE:FETCH_OWN_ACL',
+  FETCH_ANY_ACL = 'SERVICE:FETCH_ANY_ACL'
 }
 
 export interface IPostDeleteBuilder {

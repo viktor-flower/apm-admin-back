@@ -1,12 +1,13 @@
 import { bootstrapServer, buildApp } from '../../../bootstrap-server'
 import { resolveConfig } from '../../../bootstrap'
-import { CType } from '../../../declaration'
+import {CType, EAdminPermission} from '../../../declaration'
 import { ShellContainer } from '../../../container/shell'
 import request from 'supertest'
 import should from 'should'
 import { IPermissionData, PermissionEntity } from '../../../entity/permission'
 import _ from 'lodash'
 import { ObjectID } from 'bson'
+import {createUserWithPermissions} from '../../helper'
 
 describe('Controller Admin permission', () => {
   const config = resolveConfig()
@@ -14,9 +15,11 @@ describe('Controller Admin permission', () => {
   const app = buildApp(container)
   const permissionEntity = container.get<PermissionEntity>(CType.Entity.Permission)
   const shellContainer = container.get<ShellContainer>(CType.Shell)
+  let token: string
 
   before(async () => {
     await shellContainer.install()
+    token = await createUserWithPermissions(container, [EAdminPermission.MANAGE_PERMISSIONS])
   })
 
   after(async () => {
@@ -57,6 +60,7 @@ describe('Controller Admin permission', () => {
       }
       const response = await request(app)
         .post('/admin/permission/create')
+        .set('Authorization', `bearer ${token}`)
         .send({ permission: permissionData })
         .expect(200)
       should(response.body['_id']).not.undefined()
@@ -68,6 +72,7 @@ describe('Controller Admin permission', () => {
     it('Get', async () => {
       const response = await request(app)
         .get(`/admin/permission/item/${permissionId.toHexString()}`)
+        .set('Authorization', `bearer ${token}`)
         .expect(200)
       should(response.body['permission']['_id']).equal(permissionId.toHexString())
     })
@@ -77,6 +82,7 @@ describe('Controller Admin permission', () => {
       permission.name = 'updated'
       const response = await request(app)
         .post(`/admin/permission/save`)
+        .set('Authorization', `bearer ${token}`)
         .send({ permission })
         .expect(200)
       const loadedPermission = await permissionEntity.get(permissionId)
@@ -88,6 +94,7 @@ describe('Controller Admin permission', () => {
       permission.name = 'updated'
       const response = await request(app)
         .get(`/admin/permission/delete/${permissionId.toHexString()}`)
+        .set('Authorization', `bearer ${token}`)
         .expect(200)
       should(response.body['success']).true()
       const loadedPermission = await permissionEntity.get(permissionId)

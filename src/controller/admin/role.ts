@@ -3,20 +3,20 @@ import {
   controller,
   httpGet,
   httpPost,
-  interfaces,
   request,
   requestParam,
   response
 } from 'inversify-express-utils'
 
-import { CType } from '../../declaration'
+import { CType, EAdminPermission } from '../../declaration'
 import { inject } from 'inversify'
 import { CoreContainer } from '../../container/core'
 import { RoleEntity } from '../../entity/role'
 import { NextFunction, Request, Response } from 'express'
 import { ObjectID } from 'mongodb'
+import { permissionMiddleware } from '../../middleware/permission'
 
-@controller('/admin/role')
+@controller('/admin/role', permissionMiddleware(EAdminPermission.MANAGE_ROLES))
 export class AdminRoleController extends BaseHttpController {
   @inject(CType.Core)
   private coreContainer!: CoreContainer

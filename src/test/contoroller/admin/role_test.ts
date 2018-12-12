@@ -1,12 +1,13 @@
 import { bootstrapServer, buildApp } from '../../../bootstrap-server'
 import { resolveConfig } from '../../../bootstrap'
-import { CType } from '../../../declaration'
+import { CType, EAdminPermission } from '../../../declaration'
 import { ShellContainer } from '../../../container/shell'
 import request from 'supertest'
 import should from 'should'
 import { IRoleData, RoleEntity } from '../../../entity/role'
 import _ from 'lodash'
 import { ObjectID } from 'bson'
+import { createUserWithPermissions } from '../../helper'
 
 describe('Controller Admin role', () => {
   const config = resolveConfig()
@@ -14,9 +15,11 @@ describe('Controller Admin role', () => {
   const app = buildApp(container)
   const roleEntity = container.get<RoleEntity>(CType.Entity.Role)
   const shellContainer = container.get<ShellContainer>(CType.Shell)
+  let token: string
 
   before(async () => {
     await shellContainer.install()
+    token = await createUserWithPermissions(container, [EAdminPermission.MANAGE_ROLES])
   })
 
   after(async () => {
@@ -59,6 +62,7 @@ describe('Controller Admin role', () => {
       }
       const response = await request(app)
         .post('/admin/role/create')
+        .set('Authorization', `bearer ${token}`)
         .send({ role: roleData })
         .expect(200)
       should(response.body['_id']).not.undefined()
@@ -70,6 +74,7 @@ describe('Controller Admin role', () => {
     it('Get', async () => {
       const response = await request(app)
         .get(`/admin/role/item/${roleId.toHexString()}`)
+        .set('Authorization', `bearer ${token}`)
         .expect(200)
       should(response.body['role']['_id']).equal(roleId.toHexString())
     })
@@ -79,6 +84,7 @@ describe('Controller Admin role', () => {
       role.name = 'updated'
       const response = await request(app)
         .post(`/admin/role/save`)
+        .set('Authorization', `bearer ${token}`)
         .send({ role })
         .expect(200)
       const loadedRole = await roleEntity.get(roleId)
@@ -90,6 +96,7 @@ describe('Controller Admin role', () => {
       role.name = 'updated'
       const response = await request(app)
         .get(`/admin/role/delete/${roleId.toHexString()}`)
+        .set('Authorization', `bearer ${token}`)
         .expect(200)
       should(response.body['success']).true()
       const loadedRole = await roleEntity.get(roleId)

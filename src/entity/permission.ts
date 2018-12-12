@@ -1,5 +1,5 @@
 import { inject, injectable } from 'inversify'
-import { CType, IConfig, IInstallable, IPostDeleteBuilder } from '../declaration'
+import { CType, EAdminPermission, IConfig, IInstallable, IPostDeleteBuilder } from '../declaration'
 import { DbContainer } from '../container/db'
 import { ObjectID } from 'bson'
 import { DeleteWriteOpResultObject, UpdateWriteOpResult } from 'mongodb'
@@ -8,7 +8,7 @@ import { validator, schemaRules } from '../validator'
 
 export interface IPermissionData {
   _id?: ObjectID
-  name: string
+  name: string | EAdminPermission
   title: string
   description?: string
 }

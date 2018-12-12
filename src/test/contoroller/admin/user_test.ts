@@ -1,6 +1,6 @@
 import { bootstrapServer, buildApp } from '../../../bootstrap-server'
 import { resolveConfig } from '../../../bootstrap'
-import { CType } from '../../../declaration'
+import { CType, EAdminPermission } from '../../../declaration'
 import { ShellContainer } from '../../../container/shell'
 import request from 'supertest'
 import should from 'should'
@@ -8,6 +8,7 @@ import { IUserData, UserEntity } from '../../../entity/user'
 import _ from 'lodash'
 import { ObjectID } from 'bson'
 import { CoreContainer } from '../../../container/core'
+import { createUserWithPermissions } from '../../helper'
 
 describe('Controller Admin user', () => {
   const config = resolveConfig()
@@ -16,9 +17,11 @@ describe('Controller Admin user', () => {
   const userEntity = container.get<UserEntity>(CType.Entity.User)
   const coreContainer = container.get<CoreContainer>(CType.Core)
   const shellContainer = container.get<ShellContainer>(CType.Shell)
+  let token: string
 
   before(async () => {
     await shellContainer.install()
+    token = await createUserWithPermissions(container, [EAdminPermission.MANAGE_USERS])
   })
 
   after(async () => {
@@ -60,6 +63,7 @@ describe('Controller Admin user', () => {
       }
       const response = await request(app)
         .post('/admin/user/create')
+        .set('Authorization', `bearer ${token}`)
         .send({ user: userData })
         .expect(200)
       should(response.body['_id']).not.undefined()
@@ -71,6 +75,7 @@ describe('Controller Admin user', () => {
     it('Get', async () => {
       const response = await request(app)
         .get(`/admin/user/item/${userId.toHexString()}`)
+        .set('Authorization', `bearer ${token}`)
         .expect(200)
       should(response.body['user']['_id']).equal(userId.toHexString())
     })
@@ -80,6 +85,7 @@ describe('Controller Admin user', () => {
       user.name = 'updated'
       const response = await request(app)
         .post(`/admin/user/save`)
+        .set('Authorization', `bearer ${token}`)
         .send({ user })
         .expect(200)
       const loadedUser = await userEntity.get(userId)
@@ -90,6 +96,7 @@ describe('Controller Admin user', () => {
       const password = 'some new password'
       const response = await request(app)
         .post(`/admin/user/set-password`)
+        .set('Authorization', `bearer ${token}`)
         .send({ _id: userId, password })
         .expect(200)
       should(response.body.success).true()
@@ -103,6 +110,7 @@ describe('Controller Admin user', () => {
       user.name = 'updated'
       const response = await request(app)
         .get(`/admin/user/delete/${userId.toHexString()}`)
+        .set('Authorization', `bearer ${token}`)
         .expect(200)
       should(response.body['success']).true()
       const loadedUser = await userEntity.get(userId)

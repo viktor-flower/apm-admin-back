@@ -16,17 +16,13 @@ export class ServiceController extends BaseHttpController {
   private userEntity!: UserEntity
 
   @httpGet('/own-acl')
-  // @permission('fetch_own_acl')
+  @permission('fetch_own_acl')
   private async ownAcl () {
-    const hasAccess = await this.httpContext.user.isResourceOwner('fetch_own_acl')
-    if (!hasAccess) {
-      return this.json({ message: 'Forbidden' }, 403)
-    }
     return this.json(this.httpContext.user.details, 200)
   }
 
   @httpGet('/acl/:_id')
-  // @permission('fetch_any_acl')
+  @permission('fetch_any_acl')
   private async acl (request: Request) {
     const hasAccess = await this.httpContext.user.isResourceOwner('fetch_any_acl')
     if (!hasAccess) {

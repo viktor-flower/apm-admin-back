@@ -9,14 +9,15 @@ import {
   response
 } from 'inversify-express-utils'
 
-import { CType } from '../../declaration'
+import { CType, EAdminPermission } from '../../declaration'
 import { inject } from 'inversify'
 import { CoreContainer } from '../../container/core'
 import { UserEntity } from '../../entity/user'
 import { NextFunction, Request, Response } from 'express'
 import { ObjectID } from 'mongodb'
+import { permissionMiddleware } from '../../middleware/permission'
 
-@controller('/admin/user')
+@controller('/admin/user', permissionMiddleware(EAdminPermission.MANAGE_USERS))
 export class AdminUserController extends BaseHttpController {
   @inject(CType.Core)
   private coreContainer!: CoreContainer

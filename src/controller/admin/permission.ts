@@ -8,14 +8,15 @@ import {
   response
 } from 'inversify-express-utils'
 
-import { CType } from '../../declaration'
+import { CType, EAdminPermission } from '../../declaration'
 import { inject } from 'inversify'
 import { CoreContainer } from '../../container/core'
 import { PermissionEntity } from '../../entity/permission'
 import { NextFunction, Request, Response } from 'express'
 import { ObjectID } from 'mongodb'
+import { permissionMiddleware } from '../../middleware/permission'
 
-@controller('/admin/permission')
+@controller('/admin/permission', permissionMiddleware(EAdminPermission.MANAGE_PERMISSIONS))
 export class AdminPermissionController extends BaseHttpController {
   @inject(CType.Core)
   private coreContainer!: CoreContainer
