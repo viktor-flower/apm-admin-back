@@ -2,14 +2,15 @@ import { inject, injectable } from 'inversify'
 import { CType, EAdminPermission, IConfig, IInstallable, IPostDeleteBuilder } from '../declaration'
 import { DbContainer } from '../container/db'
 import { ObjectID } from 'bson'
-import { DeleteWriteOpResultObject, UpdateWriteOpResult } from 'mongodb'
+import { UpdateWriteOpResult } from 'mongodb'
 import * as _ from 'lodash'
 import { validator, schemaRules } from '../validator'
 
 export interface IPermissionData {
   _id?: ObjectID
   name: string | EAdminPermission
-  title: string
+  title: string,
+  system?: boolean
   description?: string
 }
 
@@ -54,6 +55,10 @@ export class PermissionEntity implements IInstallable {
   }
 
   public async delete (_id: ObjectID): Promise<boolean> {
+    const permission = await this.get(_id)
+    if (permission.system) {
+      throw new Error('System permission can not be deleted.')
+    }
     const db = await this.dbContainer.getDb()
     const result = await db.collection(this.collectionName).deleteOne({ _id })
 
@@ -61,10 +66,14 @@ export class PermissionEntity implements IInstallable {
       .then(() => !!result.deletedCount && result.deletedCount > 0)
   }
 
-  public async save (post: IPermissionData): Promise<UpdateWriteOpResult> {
+  public async save (updatedPermission: IPermissionData): Promise<UpdateWriteOpResult> {
+    const permission = await this.get(updatedPermission._id as ObjectID)
+    if (permission.system) {
+      throw new Error('System permission can not be edited.')
+    }
     const db = await this.dbContainer.getDb()
 
-    return db.collection(this.collectionName).updateOne({ _id: post._id }, { $set: post })
+    return db.collection(this.collectionName).updateOne({ _id: updatedPermission._id }, { $set: updatedPermission })
   }
 
   public async list (): Promise<IPermissionData[]> {

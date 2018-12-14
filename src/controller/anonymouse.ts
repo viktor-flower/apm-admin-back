@@ -22,7 +22,7 @@ export class AnonymouseController implements Controller {
         .send({ token })
     } else {
       response.status(403)
-        .send('')
+        .send({ error: 'Token has not been generated.' })
     }
   }
 }

@@ -98,6 +98,44 @@ describe('Role model', () => {
     should(foundPermission).undefined()
   })
 
+  describe('System', () => {
+    const roleData: IRoleData = {
+      name: 'role_system_name',
+      title: 'Role Title',
+      system: true,
+      description: 'The description of the role.',
+      permissionIds: []
+    }
+    let roleId: ObjectID
+
+    before(async () => {
+      roleId = await roleEntity.create(_.clone(roleData))
+    })
+
+    it('Save', async () => {
+      let errorInvoked = false
+      const loadedRole = await roleEntity.get(roleId)
+      loadedRole.title += 'changed.'
+      try {
+        await roleEntity.save(loadedRole)
+      } catch (e) {
+        errorInvoked = true
+      }
+      should(errorInvoked).true()
+    })
+
+    it('Delete', async () => {
+      let errorInvoked = false
+      try {
+        await roleEntity.delete(roleId)
+      } catch (e) {
+        errorInvoked = true
+      }
+      should(errorInvoked).true()
+    })
+
+  })
+
   after(async () => {
     await shellContainer.uninstall()
     await shellContainer.dispose()

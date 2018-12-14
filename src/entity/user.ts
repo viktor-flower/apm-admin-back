@@ -12,8 +12,9 @@ import { Error } from 'tslint/lib/error'
 export interface IUserData {
   _id?: ObjectID
   name: string
-  password: string
+  password?: string
   description: string
+  system?: boolean
   roleIds?: ObjectID[] | string[]
   roles?: IRoleData[]
 }
@@ -58,6 +59,9 @@ export class UserEntity implements IInstallable {
   public async create (user: IUserData): Promise<ObjectID> {
     const res = validator.validate(user, UserDataSchema)
     if (!res.valid) throw new Error(_.invokeMap(res.errors, 'toString').join(' '))
+    if (!user.password) {
+      user.password = Date.now().valueOf().toString()
+    }
     user.password = this.coreContainer.generateHash(user.password)
     const db = await this.dbContainer.getDb()
     const result = await db.collection(this.collectionName).insertOne(user)
@@ -133,23 +137,31 @@ export class UserEntity implements IInstallable {
   }
 
   public async delete (_id: ObjectID): Promise<boolean> {
+    const user = await this.get(_id)
+    if (user.system) {
+      throw new Error('System user can not be deleted.')
+    }
     const db = await this.dbContainer.getDb()
     const result = await db.collection(this.collectionName).deleteOne({ _id })
 
     return !!result.deletedCount && result.deletedCount > 0
   }
 
-  public async save (user: IUserData): Promise<UpdateWriteOpResult> {
-    if (!user._id) {
+  public async save (updatedUser: IUserData): Promise<UpdateWriteOpResult> {
+    if (!updatedUser._id) {
       throw new Error('Id is absent while object saving.')
+    }
+    const user = await this.get(updatedUser._id as ObjectID)
+    if (user.system) {
+      throw new Error('System user can not be edited.')
     }
     const db = await this.dbContainer.getDb()
 
     // Restore password hash. Hash has to be updated by another method.
-    const _user = await this.get(user!._id as ObjectID)
-    user.password = _user.password
+    const _user = await this.get(updatedUser!._id as ObjectID)
+    updatedUser.password = _user.password
 
-    return db.collection(this.collectionName).updateOne({ _id: user._id }, { $set: user })
+    return db.collection(this.collectionName).updateOne({ _id: updatedUser._id }, { $set: updatedUser })
   }
 
   public async setPassword (_id: ObjectID, password: string): Promise<any> {
@@ -166,7 +178,7 @@ export class UserEntity implements IInstallable {
     if (!user) {
       return ''
     }
-    const isValid: boolean = this.coreContainer.validateHash(password, user.password)
+    const isValid: boolean = this.coreContainer.validateHash(password, user.password as string)
     if (isValid) {
       return this.coreContainer.generateToken({ id: user!._id!.toString(), iat: (Date.now().valueOf() / 1000) })
     } else {

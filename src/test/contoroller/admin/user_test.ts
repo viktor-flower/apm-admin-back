@@ -101,7 +101,7 @@ describe('Controller Admin user', () => {
         .expect(200)
       should(response.body.success).true()
       const loadedUser = await userEntity.get(userId)
-      const valid = coreContainer.validateHash(password, loadedUser.password)
+      const valid = coreContainer.validateHash(password, loadedUser.password as string)
       should(valid).equal(true)
     })
 

@@ -12,6 +12,7 @@ export interface IRoleData {
   name: string
   title: string
   description?: string
+  system?: boolean
   permissionIds?: ObjectID[] | string[],
   permissions?: IPermissionData[]
 }
@@ -109,6 +110,10 @@ export class RoleEntity implements IInstallable {
   }
 
   public async delete (_id: ObjectID): Promise<boolean> {
+    const role = await this.get(_id)
+    if (role.system) {
+      throw new Error('System role can not be deleted.')
+    }
     const db = await this.dbContainer.getDb()
     const result = await db.collection(this.collectionName).deleteOne({ _id })
 
@@ -116,10 +121,14 @@ export class RoleEntity implements IInstallable {
       .then(() => !!result.deletedCount && result.deletedCount > 0)
   }
 
-  public async save (role: IRoleData): Promise<UpdateWriteOpResult> {
+  public async save (updatedRole: IRoleData): Promise<UpdateWriteOpResult> {
+    const role = await this.get(updatedRole._id as ObjectID)
+    if (role.system) {
+      throw new Error('System role can not be edited.')
+    }
     const db = await this.dbContainer.getDb()
 
-    return db.collection(this.collectionName).updateOne({ _id: role._id }, { $set: role })
+    return db.collection(this.collectionName).updateOne({ _id: updatedRole._id }, { $set: updatedRole })
   }
 
   public async list (): Promise<IRoleData[]> {

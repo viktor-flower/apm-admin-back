@@ -7,7 +7,7 @@ import _ from 'lodash'
 import { IRoleData, RoleEntity } from '../../entity/role'
 import { ObjectID } from 'bson'
 import { CoreContainer } from '../../container/core'
-import { PermissionEntity } from '../../entity/permission'
+import {IPermissionData, PermissionEntity} from '../../entity/permission'
 
 describe('User model', () => {
   const config = resolveConfig()
@@ -65,7 +65,7 @@ describe('User model', () => {
     // Sets password.
     await userEntity.setPassword(retrievedUser!._id as ObjectID, 'new password')
     updatedRUser = await userEntity.get(userId)
-    const valid = coreContainer.validateHash('new password', updatedRUser.password)
+    const valid = coreContainer.validateHash('new password', updatedRUser.password as string)
     should(valid).equal(true)
 
     // Delete.
@@ -141,6 +141,43 @@ describe('User model', () => {
   it('getFull', async () => {
     const user = await userEntity.getFull(userId)
     should(!!user).true()
+  })
+
+  describe('System', () => {
+    const userData: IUserData = {
+      name: 'user_system_name',
+      system: true,
+      description: 'The description of the user.',
+      roleIds: []
+    }
+    let userId: ObjectID
+
+    before(async () => {
+      userId = await userEntity.create(_.clone(userData))
+    })
+
+    it('Save', async () => {
+      let errorInvoked = false
+      const loadedUser = await userEntity.get(userId)
+      loadedUser.description += 'changed.'
+      try {
+        await userEntity.save(loadedUser)
+      } catch (e) {
+        errorInvoked = true
+      }
+      should(errorInvoked).true()
+    })
+
+    it('Delete', async () => {
+      let errorInvoked = false
+      try {
+        await permissionEntity.delete(userId)
+      } catch (e) {
+        errorInvoked = true
+      }
+      should(errorInvoked).true()
+    })
+
   })
 
   after(async () => {
