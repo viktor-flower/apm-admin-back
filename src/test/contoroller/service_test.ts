@@ -1,15 +1,15 @@
-import { bootstrapServer, buildApp } from '../../bootstrap-server'
-import { resolveConfig } from '../../bootstrap'
-import { CType, ITokenData } from '../../declaration'
-import { ShellContainer } from '../../container/shell'
+import {bootstrapServer, buildApp} from '../../bootstrap-server'
+import {resolveConfig} from '../../bootstrap'
+import {CType, EAdminPermission} from '../../declaration'
+import {ShellContainer} from '../../container/shell'
 import request from 'supertest'
 import should from 'should'
-import { IUserData, UserEntity } from '../../entity/user'
-import { ObjectID } from 'bson'
-import { IPermissionData, PermissionEntity } from '../../entity/permission'
-import { IRoleData, RoleEntity } from '../../entity/role'
+import {IUserData, UserEntity} from '../../entity/user'
+import {ObjectID} from 'bson'
+import {IPermissionData, PermissionEntity} from '../../entity/permission'
+import {IRoleData, RoleEntity} from '../../entity/role'
 import _ from 'lodash'
-import { CoreContainer } from '../../container/core'
+import {CoreContainer} from '../../container/core'
 
 describe('Controller Service', () => {
   const config = resolveConfig()
@@ -47,12 +47,12 @@ describe('Controller Service', () => {
       description: 'The description of the permission.'
     }
     const permissionB: IPermissionData = {
-      name: 'fetch_own_acl',
+      name: EAdminPermission.FETCH_OWN_ACL,
       title: 'Fetch oen ACL',
       description: 'The descriptsion of the permission.'
     }
     const permissionC: IPermissionData = {
-      name: 'fetch_any_acl',
+      name: EAdminPermission.FETCH_ANY_ACL,
       title: 'Fetch any ACL',
       description: 'The descriptsion of the permission.'
     }

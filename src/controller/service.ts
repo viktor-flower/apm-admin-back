@@ -5,7 +5,7 @@ import Controller = interfaces.Controller
 import { permission } from '../decorator'
 import { inject } from 'inversify'
 import { AuthenticationContainer } from '../container/authentication'
-import { CType } from '../declaration'
+import {CType, EAdminPermission} from '../declaration'
 import { UserEntity } from '../entity/user'
 import { ObjectId } from 'bson'
 
@@ -16,18 +16,14 @@ export class ServiceController extends BaseHttpController {
   private userEntity!: UserEntity
 
   @httpGet('/own-acl')
-  @permission('fetch_own_acl')
+  @permission(EAdminPermission.FETCH_OWN_ACL)
   private async ownAcl () {
     return this.json(this.httpContext.user.details, 200)
   }
 
   @httpGet('/acl/:_id')
-  @permission('fetch_any_acl')
+  @permission(EAdminPermission.FETCH_ANY_ACL)
   private async acl (request: Request) {
-    const hasAccess = await this.httpContext.user.isResourceOwner('fetch_any_acl')
-    if (!hasAccess) {
-      return this.json({ message: 'Forbidden' }, 403)
-    }
     const userData = await this.userEntity.getFull(new ObjectId(request.params._id))
 
     return this.json(userData, 200)
