@@ -47,9 +47,13 @@ describe('Role model', () => {
     should(roleId.toHexString().length).above(1)
 
     // Get.
-    const retrievedRole = await roleEntity.get(roleId)
+    let retrievedRole = await roleEntity.get(roleId)
     should((retrievedRole._id as ObjectID)!.toHexString()).equal(roleId.toHexString())
     should(role.name).equal(retrievedRole.name)
+
+    // Load by name.
+    retrievedRole = await roleEntity.getByName('role_name')
+    should(retrievedRole.name).equal('role_name')
 
     // Save.
     role.name = 'updated'
@@ -81,7 +85,7 @@ describe('Role model', () => {
     const permissionIdA = await permissionEntity.create(permissionA)
     const permissionIdB = await permissionEntity.create(permissionB)
     const role: IRoleData = {
-      name: 'perm_name',
+      name: 'role_name',
       title: 'Role Title*',
       description: 'The description of the role.',
       permissionIds: [permissionIdA, permissionIdB]

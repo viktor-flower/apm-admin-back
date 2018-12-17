@@ -4,9 +4,10 @@ import { interfaces } from 'inversify-express-utils'
 import AuthProvider = interfaces.AuthProvider
 import Principal = interfaces.Principal
 import { IUserData, UserEntity } from '../entity/user'
-import { CType } from '../declaration'
+import { ANONYMOUSE_ROLE, AUTHENTOCATED_ROLE, CType } from '../declaration'
 import { CoreContainer } from './core'
 import { ObjectID } from 'bson'
+import { IRoleData, RoleEntity } from '../entity/role'
 
 class UserPrincipal implements interfaces.Principal {
   public details: IUserData
@@ -19,10 +20,6 @@ class UserPrincipal implements interfaces.Principal {
   }
 
   public async isResourceOwner (resourceId: any): Promise<boolean> {
-    const isAuthenticated = await this.isAuthenticated()
-    if (!isAuthenticated) {
-      return Promise.resolve(false)
-    }
     const permissionNames: string[] = []
     this.details!.roles!.forEach((role) => {
       role!.permissions!.forEach((permission) => {
@@ -47,6 +44,29 @@ export class AuthenticationContainer implements AuthProvider {
   private coreContainer!: CoreContainer
   @inject(CType.Entity.User)
   private userEntity!: UserEntity
+  @inject(CType.Entity.Role)
+  private roleEntity!: RoleEntity
+
+  private anonymouseRole!: IRoleData
+  private authenticatedRole!: IRoleData
+
+  public async getAnonymouseRole (): Promise<IRoleData> {
+    if (this.anonymouseRole) {
+      return this.anonymouseRole
+    }
+    this.anonymouseRole = await this.roleEntity.getByName(ANONYMOUSE_ROLE)
+
+    return this.anonymouseRole
+  }
+
+  public async getAuthenticatedRole (): Promise<IRoleData> {
+    if (this.authenticatedRole) {
+      return this.authenticatedRole
+    }
+    this.authenticatedRole = await this.roleEntity.getByName(AUTHENTOCATED_ROLE)
+
+    return this.authenticatedRole
+  }
 
   public async getUser (
     request: Request,
@@ -55,7 +75,14 @@ export class AuthenticationContainer implements AuthProvider {
   ): Promise<Principal> {
     const str = request.get(`Authorization`)
     if (!str) {
-      return new UserPrincipal(null)
+      const anonymouseRole = await this.getAnonymouseRole()
+      const details: IUserData = {
+        name: ANONYMOUSE_ROLE,
+        roles: [ anonymouseRole ]
+      }
+
+      // Anonymouse.
+      return new UserPrincipal(details)
     }
     const authorizationType = str.substr(0, 6)
     if (authorizationType !== 'bearer') {
@@ -64,7 +91,14 @@ export class AuthenticationContainer implements AuthProvider {
     const encryptedToken = str.substr(7, str.length - 1)
     const tokenData = this.coreContainer.decodeToken(encryptedToken)
     const user = await this.userEntity.getFull(new ObjectID(tokenData.id))
+    if (!user) {
+      throw new Error('The has not been found that corresponds to token.')
+    }
+
+    // Attaches to all authenticated users the role - Authenticated.
+    user.roles!.push(await this.getAuthenticatedRole())
 
     return new UserPrincipal(user)
   }
+
 }

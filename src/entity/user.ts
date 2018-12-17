@@ -13,7 +13,7 @@ export interface IUserData {
   _id?: ObjectID
   name: string
   password?: string
-  description: string
+  description?: string
   system?: boolean
   roleIds?: ObjectID[] | string[]
   roles?: IRoleData[]
@@ -69,7 +69,7 @@ export class UserEntity implements IInstallable {
     return result.insertedId
   }
 
-  public async getFull (_id: ObjectID): Promise<any> {
+  public async getFull (_id: ObjectID): Promise<IUserData> {
     const db = await this.dbContainer.getDb()
     const array = await db.collection(this.collectionName).aggregate([
       {

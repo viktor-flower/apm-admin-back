@@ -5,7 +5,7 @@ import Controller = interfaces.Controller
 import { permission } from '../decorator'
 import { inject } from 'inversify'
 import { AuthenticationContainer } from '../container/authentication'
-import {CType, EAdminPermission} from '../declaration'
+import { CType, EAdminPermission } from '../declaration'
 import { UserEntity } from '../entity/user'
 import { ObjectId } from 'bson'
 

@@ -60,6 +60,9 @@ export enum EAdminPermission {
   FETCH_ANY_ACL = 'SERVICE:FETCH_ANY_ACL'
 }
 
+export const ANONYMOUSE_ROLE = ESystemRole.ANONYMOUSE
+export const AUTHENTOCATED_ROLE = ESystemRole.AUTHENTICATED
+
 export interface IPostDeleteBuilder {
   (result: ObjectID): void
 }

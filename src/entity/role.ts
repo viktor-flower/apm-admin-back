@@ -66,13 +66,8 @@ export class RoleEntity implements IInstallable {
     return result.insertedId
   }
 
-  public async get (_id: ObjectID): Promise<IRoleData> {
-    const db = await this.dbContainer.getDb()
-
-    const query = [
-      {
-        $match: { _id }
-      },
+  public getAggregationQuery () {
+    return [
       {
         $unwind: {
           path: '$permissionIds',
@@ -103,6 +98,30 @@ export class RoleEntity implements IInstallable {
           permissionIds: { $push: '$permissionIds' }
         }
       }
+    ]
+  }
+
+  public async get (_id: ObjectID): Promise<IRoleData> {
+    const db = await this.dbContainer.getDb()
+
+    const query = [
+      {
+        $match: { _id }
+      },
+      ...this.getAggregationQuery()
+    ]
+    const list = await db.collection(this.collectionName).aggregate(query).toArray()
+
+    return list[0] as IRoleData
+  }
+
+  public async getByName (name: string): Promise<IRoleData> {
+    const db = await this.dbContainer.getDb()
+    const query = [
+      {
+        $match: { name }
+      },
+      ...this.getAggregationQuery()
     ]
     const list = await db.collection(this.collectionName).aggregate(query).toArray()
 

@@ -7,7 +7,7 @@ import _ from 'lodash'
 import { IRoleData, RoleEntity } from '../../entity/role'
 import { ObjectID } from 'bson'
 import { CoreContainer } from '../../container/core'
-import {IPermissionData, PermissionEntity} from '../../entity/permission'
+import { IPermissionData, PermissionEntity } from '../../entity/permission'
 
 describe('User model', () => {
   const config = resolveConfig()

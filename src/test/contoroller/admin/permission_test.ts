@@ -1,13 +1,13 @@
 import { bootstrapServer, buildApp } from '../../../bootstrap-server'
 import { resolveConfig } from '../../../bootstrap'
-import {CType, EAdminPermission} from '../../../declaration'
+import { CType, EAdminPermission } from '../../../declaration'
 import { ShellContainer } from '../../../container/shell'
 import request from 'supertest'
 import should from 'should'
 import { IPermissionData, PermissionEntity } from '../../../entity/permission'
 import _ from 'lodash'
 import { ObjectID } from 'bson'
-import {createUserWithPermissions} from '../../helper'
+import { createUserWithPermissions } from '../../helper'
 
 describe('Controller Admin permission', () => {
   const config = resolveConfig()

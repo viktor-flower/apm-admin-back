@@ -4,7 +4,7 @@ import { CType } from '../../declaration'
 import { IPermissionData, PermissionEntity } from '../../entity/permission'
 import should from 'should'
 import _ from 'lodash'
-import {ObjectID} from 'bson'
+import { ObjectID } from 'bson'
 
 describe('Permission model', () => {
   const config = resolveConfig()

@@ -1,5 +1,5 @@
 import { resolveConfig } from '../../bootstrap'
-import { CType, ITokenData } from '../../declaration'
+import { ANONYMOUSE_ROLE, AUTHENTOCATED_ROLE, CType, ITokenData } from '../../declaration'
 import { CoreContainer } from '../../container/core'
 import should from 'should'
 import { IUserData, UserEntity } from '../../entity/user'
@@ -22,12 +22,44 @@ describe('Container Authentication', () => {
   const roleEntity = container.get<RoleEntity>(CType.Entity.Role)
   const userEntity = container.get<UserEntity>(CType.Entity.User)
 
+  let authenticatedPermissionId!: ObjectID
+  let anonymousePermissionId!: ObjectID
+  let authenticatedRoleId!: ObjectID
+  let anonymouseRoleId!: ObjectID
+
   it('test', () => {
     should(coreContainer.test()).equal('testable')
   })
 
   before(async () => {
     await shellContainer.install()
+  })
+
+  before(async () => {
+    anonymousePermissionId = await permissionEntity.create({
+      name: 'anonymouse_permission',
+      title: 'Anonymouse permission.',
+      description: 'The descriptsion of the permission.'
+    })
+    anonymouseRoleId = await roleEntity.create({
+      name: ANONYMOUSE_ROLE,
+      title: 'Anonymouse role',
+      system: true,
+      description: 'The description of the role.',
+      permissionIds: [ anonymousePermissionId ]
+    })
+    authenticatedPermissionId = await permissionEntity.create({
+      name: 'authenticated_permission',
+      title: 'Authenticated permission.',
+      description: 'The descriptsion of the permission.'
+    })
+    authenticatedRoleId = await roleEntity.create({
+      name: AUTHENTOCATED_ROLE,
+      title: 'Authenticated role',
+      system: true,
+      description: 'The description of the role.',
+      permissionIds: [ authenticatedPermissionId ]
+    })
   })
 
   after(async () => {
@@ -62,7 +94,7 @@ describe('Container Authentication', () => {
         description: 'The description of the role.',
         permissionIds: [permissionIdA, permissionIdB]
       }
-      roleId = await roleEntity.create(_.clone(role))
+      roleId = await roleEntity.create({ ...role })
 
       const user: IUserData = {
         name: 'user_name',
@@ -73,7 +105,7 @@ describe('Container Authentication', () => {
 
       // Create.
       userId = await userEntity.create({
-        ..._.clone(user),
+        ...user,
         name: 'user_name_a'
       })
       const tokenData: ITokenData = {
@@ -111,26 +143,53 @@ describe('Container Authentication', () => {
         }
       })
       const response = httpMocks.createResponse()
-      const principal = await authenticationContainer.getUser(request, response)
-      const isAuthenticated = await principal.isAuthenticated()
-      should(isAuthenticated).false()
+      let errorInvoked = false
+      try {
+        await authenticationContainer.getUser(request, response)
+      } catch (e) {
+        errorInvoked = true
+        should(e.message).equal('The has not been found that corresponds to token.')
+      }
+      should(errorInvoked).true()
     })
 
-    it('Principal', async () => {
-      const request = httpMocks.createRequest({
-        method: 'GET',
-        url: '/',
-        headers: {
-          Authorization: `bearer ${token}`
-        }
+    describe('Prinicipal', () => {
+      it('Authenticated', async () => {
+        const request = httpMocks.createRequest({
+          method: 'GET',
+          url: '/',
+          headers: {
+            Authorization: `bearer ${token}`
+          }
+        })
+        const response = httpMocks.createResponse()
+        const principal = await authenticationContainer.getUser(request, response)
+        const isAuthenticated = await principal.isAuthenticated()
+        should(isAuthenticated).true()
+        let hasAccess = await principal.isResourceOwner('a_perm_name_a')
+        should(hasAccess).true()
+        hasAccess = await principal.isResourceOwner('a_perm_name_c')
+        should(hasAccess).false()
+
+        // Checks that it contains a permission from Authenticated role.
+        hasAccess = await principal.isResourceOwner('authenticated_permission')
+        should(hasAccess).true()
       })
-      const response = httpMocks.createResponse()
-      const principal = await authenticationContainer.getUser(request, response)
-      const isAuthenticated = await principal.isAuthenticated()
-      let hasAccess = await principal.isResourceOwner('a_perm_name_a')
-      should(hasAccess).true()
-      hasAccess = await principal.isResourceOwner('a_perm_name_c')
-      should(hasAccess).false()
+
+      it('Anonymouse', async () => {
+        const request = httpMocks.createRequest({
+          method: 'GET',
+          url: '/'
+        })
+        const response = httpMocks.createResponse()
+        const principal = await authenticationContainer.getUser(request, response)
+        const isAuthenticated = await principal.isAuthenticated()
+        should(isAuthenticated).false()
+        let hasAccess = await principal.isResourceOwner('a_perm_name_a')
+        should(hasAccess).false()
+        hasAccess = await principal.isResourceOwner('anonymouse_permission')
+        should(hasAccess).true()
+      })
     })
   })
 })
