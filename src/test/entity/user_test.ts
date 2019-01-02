@@ -123,9 +123,9 @@ describe('User model', () => {
 
     // Get full
     const data = await userEntity.getFull(userId)
-    const _roleB = data.roles.find((r: any) => roleIdB.equals(r._id))
-    const _permD = _roleB.permissions.find((p: any) => permIdD.equals(p._id))
-    should(_permD._id.equals(permIdD))
+    const _roleB = data.roles!.find((r: any) => roleIdB.equals(r._id))
+    const _permD = _roleB!.permissions!.find((p: any) => permIdD.equals(p._id))
+    should(_permD!._id!.equals(permIdD))
 
     let loadedUser = await userEntity.get(userId)
     let foundUser = (loadedUser.roleIds! as ObjectID[]).find((_id) => roleIdA.equals(_id))
