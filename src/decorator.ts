@@ -12,7 +12,7 @@ export function permission (permission: string): any {
       )
       const hasAccess = await context.user.isResourceOwner(permission)
       if (hasAccess) {
-        return fn.call(this, request, response)
+        return fn.call(this, request, response, next)
       } else {
         response
           .status(403)
